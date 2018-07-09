@@ -15,10 +15,10 @@ In order to use the project in your own environment:
 - build in e.g. netbeans (v8 was used)
 - deploy (in tomcat)
 - add agrodatacube.properties file in root of tomcat, see #47 template in agrodatacube.zip
-- get a database, see #38 Sample database (aka Duckburg) is available (adctest.dmp.txt). Ask us!
+- get a database, see #38 Sample database (aka Duckburg) is available (adctest.dmp.txt). **Ask us!**
 
-Steps to use (verified with postgres 9.4):
+Steps to use db (_verified with postgres 9.4_):
 - create database adctest with encoding='UTF8';
 - create extension postgis;
-- create user adctest with password <password>;
+- create user adctest with password _password_;
 - restore: psql --host localhost --port 5432 --username "postgres" --dbname "adctest" -v ON_ERROR_STOP=1 < adctest.dmp.txt (_use settings that apply to your situation_)
