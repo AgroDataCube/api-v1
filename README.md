@@ -14,7 +14,7 @@ In order to use the project in your own environment:
 - optionally change the path in web.xml
 - build in e.g. netbeans (v8 was used)
 - deploy (in tomcat)
-- add agrodatacube.properties file in root of tomcat, see #47 template in agrodatacube.zip
+- add filled-in agrodatacube.properties file from provided template in _root of tomcat_
 - get a database, see #38 Sample database (aka Duckburg) is available (adctest.dmp.txt). **Ask us!**
 
 Steps to use db (_verified with postgres 9.4_):
