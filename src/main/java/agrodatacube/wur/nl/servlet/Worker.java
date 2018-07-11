@@ -1,14 +1,7 @@
 /*
- * Copyright 2018 Wageningen Environmental Research
- *
- * For licensing information read the included LICENSE.txt file.
- *
- * Unless required by applicable law or agreed to in writing, this software
- * is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF
- * ANY KIND, either express or implied.
- *
- * STILL UNDER DEVELOPMENT
  */
+// https://docs.jboss.org/resteasy/docs/1.0.2.GA/userguide/html/JAX-RS_Resource_Locators_and_Sub_Resources.html
+// https://examples.javacodegeeks.com/enterprise-java/rest/jersey/jax-rs-queryparam-example/ -> Context en niet gedefinieerde parameters
 package agrodatacube.wur.nl.servlet;
 
 import agrodatacube.wur.nl.exec.Executor;
@@ -33,6 +26,9 @@ import agrodatacube.wur.nl.token.AccessTokenFactory;
  * This class is the base of all servlets. It verifies tokens, executes queries
  * and returns results.
  *
+ * WENR location in RD (28929) POINT(174098.355412451 444323.980737271)
+ * 
+ * 170000 440000,170000 450000, 180000 450000, 180000 440000,170000 440000
  * @author rande001
  */
 public class Worker {
@@ -151,7 +147,7 @@ public class Worker {
      * @return
      */
     protected Response doWorkWithoutTokenValidation(String query,
-            AccessToken accessToken,
+            AccessToken accessToken, 
             ArrayList<Object> params,
             AdapterTableResultFormatter f) {
         try {
@@ -160,13 +156,7 @@ public class Worker {
                 Registration.updateUsageInformation(accessToken, result.getArea(), getRemoteIP());
             }
             
-            // TODO: AJAX CROSS DOMAIN 
-            return Response.status(200).header("Content-type", "application/json").entity(result.getResult())
-//                                       .header("Access-Control-Allow-Origin", "*")
-//                                       .header("Access-Control-Allow-Methods", "GET, PUT, POST, OPTIONS, DELETE")
-//                                       .header("Access-Control-Allow-Headers", "Content-type,token")
-//                                       .header("Access-Control-Max-Age", "86400")
-                    .build();
+            return Response.status(200).header("Content-type", "application/json").entity(result.getResult()).build();
         } catch (Exception e) {
             AdapterTableResult t = new AdapterTableResult();
             t.setStatus(e.getMessage());
@@ -311,5 +301,29 @@ public class Worker {
 //            paging.setAllData(s.equalsIgnoreCase("alldata"));     // Return all data
 //            paging.setExecuteCount(s.equalsIgnoreCase("nrhits")); // Only return nr of hits
 //        }
+    }
+    
+    /**
+     * See if a geometry is a 28992 (RD New) or not, if it is not 28992 transform the geometry to 28992 and return that.
+     * 
+     * @param epsg
+     * @param geom
+     * @return 
+     */
+    protected String transformTo28992EWKT(Integer epsg, String geom) {
+        if (epsg == null) {
+            return "SRID=28992;"+geom;
+        }
+        
+        if (epsg == 28992) {
+            return "SRID=28992;"+geom;
+        }
+        
+        try {
+            return new String(Executor.executeForImage("SRID="+epsg+";"+geom));            
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -1,11 +1,7 @@
 /*
- * Copyright 2018 Wageningen Environmental Research
- *
- * For licensing information read the included LICENSE.txt file.
- *
- * Unless required by applicable law or agreed to in writing, this software
- * is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF
- * ANY KIND, either express or implied.
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
  */
 package agrodatacube.wur.nl.servlet;
 
@@ -61,18 +57,18 @@ public class AHNServlet extends Worker {
             //
             if (epsg != null) {
                 query = "With foo as (select st_transform(st_geomfromewkt(?),28992) as geom) "
-                        + "select  sum(d.count) count,  max(st_area(geom)) area, sum(d.count*d.mean)/sum(d.count)  mean  ,   min( d.min),max(  d.max)"
+                        + "select  max(st_area(geom)) area, round((sum(d.count*d.mean)/sum(d.count))::numeric,3)  mean  ,   min( d.min),max(  d.max)"
                         + " from ("
                         + "SELECT (ST_SummaryStats(ST_Clip(r.rast,foo.geom))).*, foo.geom geom"
-                        + " FROM ahn r, foo"
+                        + " FROM ahn2_5m r, foo"
                         + " WHERE st_intersects(r.rast, foo.geom)) as d";
                 params.add("srid=" + epsg + ";" + geom);
             } else {
                 query = "With foo as (select st_geomfromewkt(?) as geom) "
-                        + "select  sum(d.count) count,  max(st_area(geom)) area,  sum(d.count*d.mean)/sum(d.count)  mean  ,   min( d.min),max(  d.max)"
+                        + "select  max(st_area(geom)) area,  round((sum(d.count*d.mean)/sum(d.count))::numeric,3)  mean  ,   min( d.min),max(  d.max)"
                         + " from ("
                         + "SELECT (ST_SummaryStats(ST_Clip(r.rast,foo.geom))).*, foo.geom geom"
-                        + " FROM ahn r, foo"
+                        + " FROM ahn2_5m r, foo"
                         + " WHERE st_intersects(r.rast, foo.geom)) as d";
                 params.add("srid=28992;" + geom);
             }

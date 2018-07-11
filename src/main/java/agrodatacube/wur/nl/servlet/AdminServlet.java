@@ -1,15 +1,13 @@
 /*
- * Copyright 2018 Wageningen Environmental Research
- *
- * For licensing information read the included LICENSE.txt file.
- *
- * Unless required by applicable law or agreed to in writing, this software
- * is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF
- * ANY KIND, either express or implied.
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
  */
 package agrodatacube.wur.nl.servlet;
 
 import agrodatacube.wur.nl.formatter.AdapterTableResultGeoJsonFormatter;
+import agrodatacube.wur.nl.token.AccessToken;
+import agrodatacube.wur.nl.token.AccessTokenFactory;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;

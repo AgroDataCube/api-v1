@@ -1,13 +1,5 @@
 /*
- * Copyright 2018 Wageningen Environmental Research
- *
- * For licensing information read the included LICENSE.txt file.
- *
- * Unless required by applicable law or agreed to in writing, this software
- * is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF
- * ANY KIND, either express or implied.
- *
- * STILL UNDER DEVELOPMENT
+ * This class is a test to see if we can produce raster output.
  */
 package agrodatacube.wur.nl.servlet;
 
@@ -24,7 +16,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
 /**
- * Still under development. Tests revealed the image is not always covering 100% of the supplied polygon. Perhaps an issues with tiles ?
+ * Still under development.
  * @author Rande001
  */
 @Path("/image")
@@ -43,8 +35,8 @@ public class RasterServlet extends Worker {
         try {
             
             String query = String.format("SELECT ST_AsGDALRaster(rast, 'GTiff') "
-                    + "FROM (SELECT ST_Clip(r.rast,p.geom) as rast "
-                    + "                             FROM ahn r"
+                    + "FROM (SELECT st_union(ST_Clip(r.rast,p.geom)) as rast "
+                    + "                             FROM ahn2_5m r"
                     + "                                , gewaspercelen p "
                     + "                            WHERE p.fieldid = %d "
                     + "                              AND st_intersects(r.rast, p.geom)"
@@ -91,7 +83,7 @@ public class RasterServlet extends Worker {
             }
             query = query.concat(" SELECT ST_AsGDALRaster(rast, 'GTiff') "
                     + "FROM (SELECT ST_Clip(r.rast,FOO.geom) as rast "
-                    + "                             FROM ahn r, foo"
+                    + "                             FROM ahn2_5m r, foo"
                     + "                            WHERE st_intersects(r.rast, foo.geom)"
                     + "                          ) as ahn_foo");
             result = Executor.executeForImage(query);

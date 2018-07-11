@@ -1,21 +1,13 @@
 package agrodatacube.wur.nl.servlet;
-/*
- * Copyright 2018 Wageningen Environmental Research
- *
- * For licensing information read the included LICENSE.txt file.
- *
- * Unless required by applicable law or agreed to in writing, this software
- * is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF
- * ANY KIND, either express or implied.
 
-*/
-import agrodatacube.wur.nl.result.DateExpression;
+import agrodatacube.wur.nl.DateExpression;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import java.util.ArrayList;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -96,7 +88,16 @@ public class FieldsServlet extends Worker {
             }
         }
         
-        String query = String.format("select fieldid, b.shapefile_objectid as soilid , soilcode, st_asgeojson( %s st_intersection(b.geom,p.geom) %s , %d ) as geom,st_area(st_intersection(b.geom,p.geom)) as area , st_perimeter(st_intersection(b.geom,p.geom)) as perimeter from bod50000 b, gewaspercelen p  where p.fieldid=%d and st_intersects(p.geom,b.geom) order by fieldid, b.shapefile_objectid", to4326_begin, to4326_end, getNumberOfdecimals(), fieldid);
+        String query = String.format("select * from (select fieldid"
+                                        + ", b.shapefile_objectid as soilid "
+                                        + ", soilcode"
+                                        + ", st_asgeojson( %s st_intersection(b.geom,p.geom) %s , %d ) as geom"
+                                        + ",st_area(st_intersection(b.geom,p.geom)) as area"
+                                        + ", st_perimeter(st_intersection(b.geom,p.geom)) as perimeter"
+                                    + " from bod50000 b"
+                                        + ", gewaspercelen p  "
+                                   + " where p.fieldid=%d "
+                                      + "and st_intersects(p.geom,b.geom) and not st_touches(p.geom, b.geom)) as foo order by fieldid, area desc", to4326_begin, to4326_end, getNumberOfdecimals(), fieldid);
         return doWorkWithTokenValidation(query, token);
     }
     
@@ -129,7 +130,16 @@ public class FieldsServlet extends Worker {
             }
         }
         
-        String query = String.format("select fieldid, bofek2012 as soilparamid , pawn, st_asgeojson( %s st_intersection(b.geom,p.geom) %s , %d ) as geom,st_area(st_intersection(b.geom,p.geom)) as area , st_perimeter(st_intersection(b.geom,p.geom)) as perimeter from bofek2012 b, gewaspercelen p  where p.fieldid=%d and st_intersects(p.geom,b.geom) order by fieldid, bofek2012", to4326_begin, to4326_end, getNumberOfdecimals(), fieldid);
+        String query = String.format("select * from (select fieldid"
+                                         + ", bofek2012 as soilparamid "
+                                         + ", pawn"
+                                         + ", st_asgeojson( %s st_intersection(b.geom,p.geom) %s , %d ) as geom"
+                                         + ", st_area(st_intersection(b.geom,p.geom)) as area "
+                                         + ", st_perimeter(st_intersection(b.geom,p.geom)) as perimeter "
+                                     + " from bofek2012 b"
+                                         + ", gewaspercelen p  "
+                                    + " where p.fieldid=%d "
+                                       + "and st_intersects(p.geom,b.geom) and not st_touches(p.geom, b.geom)) as foo order by fieldid, area desc", to4326_begin, to4326_end, getNumberOfdecimals(), fieldid);
         return doWorkWithTokenValidation(query, token);
     }
     
@@ -161,7 +171,17 @@ public class FieldsServlet extends Worker {
                 setOutputEpsg(4326);
             }
         }
-        String query = String.format("select fieldid,year,crop_code, crop_name, grondgebruik, st_asgeojson(%s geom %s , %d  ) as geom, st_area(geom) as area, st_perimeter(geom) as perimeter  from gewaspercelen where fieldid= %d order by fieldid", to4326_begin, to4326_end, getNumberOfdecimals(), fieldid);
+        String query = String.format("select fieldid"
+                                       + " , year"
+                                       + " , crop_code"
+                                       + " , crop_name"
+                                       + " , grondgebruik"
+                                       + ", st_asgeojson(%s geom %s , %d  ) as geom"
+                                       + ", st_area(geom) as area"
+                                       + ", st_perimeter(geom) as perimeter"
+                                  + "  from gewaspercelen "
+                                  + " where fieldid= %d "
+                                  + "order by fieldid", to4326_begin, to4326_end, getNumberOfdecimals(), fieldid);
         return doWorkWithTokenValidation(query, token);
     }
     
@@ -169,7 +189,103 @@ public class FieldsServlet extends Worker {
     @Path("/")
     @ApiOperation(value = "Return the geometry and soil information of the intersections of the supplied geometry and the fields. If no epsg is provided epsg = 28992 (RD) is assumed. Currently only epsg's 28992 and 4326 (WGS 84) are supported")
     @Produces(MediaType.APPLICATION_JSON + ";charset=utf-8")
-    public Response getFieldForParameter(
+    public Response getFieldForParameterGet(
+            @ApiParam(value = "Output geometry epsg. Default is 28992 only allowed value 4326", required = false) @QueryParam("output_epsg") Integer output_epsg,
+            @ApiParam(value = "Define the number of resources returned min = 0 , max = 50 ", required = false) @QueryParam("page_size") Integer page_size,
+            @ApiParam(value = "Depending on supplied value (nrhits or alldata) return either nrhits or all rows ", required = false) @QueryParam("result") String results,
+            @ApiParam(value = "Define the rank of the first resource to be returned. NOTE first is 0 NOT 1 ", required = false) @QueryParam("page_offset") Integer page_offset,
+            @ApiParam(value = "The year for which you want information. ") @QueryParam("year") Integer year,
+            @ApiParam(value = "The cropcode for which you want information. ", required = false) @QueryParam("cropcode") String cropcode,
+            @ApiParam(value = "The cropname for which you want information. Matchins done case non sesitive using contains ", required = false) @QueryParam("cropname") String cropname,
+            @ApiParam(value = "A valid WKT geometry (point or polygon). Default in epsg 28992 when not please supply epsg", required = false) @QueryParam("geometry") String geom,
+            @ApiParam(value = "The epsg for the supplied geomery. Default 28992 (RD). Currently 4326 (WGS84) and 28992 (RD) are supported", required = false) @QueryParam("epsg") Integer epsg,
+            @ApiParam(value = "A token allows accesss to resources. ", required = true) @HeaderParam("token") String token
+    ) {
+        reset();
+        setResults(results);
+        if (page_offset != null) {
+            setOffset(page_offset);
+        }
+        if (page_size != null) {
+            setPageSize(page_size);
+        }
+        
+        ArrayList<Object> params = new ArrayList<>();
+        setOutputEpsg(28992);
+        String to4326_begin = "";
+        String to4326_end = "";
+        if (output_epsg != null) {
+            if (output_epsg == 4326) {
+                to4326_begin = "st_transform(";
+                to4326_end = ",4326)";
+                setOutputEpsg(4326);
+            }
+        }
+        String query = String.format("select year"
+                                       + " , crop_code"
+                                       + " , crop_name"
+                                       + " , fieldid"
+                                       + " , st_asgeojson(%s p.geom %s , %d ) as geom "
+                                       + " , st_area(p.geom) as area "
+                                       + " , st_perimeter(p.geom) as perimeter "
+                                    + " from gewaspercelen p "
+                                   + " where fieldid > 0 ", to4326_begin, to4326_end, getNumberOfdecimals()); // force where clause usage so next can be AND
+        if (geom != null) {
+            if (epsg != null) {
+                // Voorlopig alleen overlap selectie dus hele object voldoet.
+                query = String.format(
+                          "with foo as (select st_transform(st_geomfromewkt(?),28992) as geom) \n"
+                        + "select * from (select year"
+                             + ", crop_code"
+                             + ", crop_name"
+                             + ", fieldid"
+                             + ", st_asgeojson(%s st_intersection(p.geom,foo.geom) %s , %d ) as geom "
+                             + ", st_area(st_intersection(p.geom,foo.geom)) as area "
+                             + ", st_perimeter(st_intersection(p.geom,foo.geom)) as perimeter \n"
+                        + "  from gewaspercelen p , foo \n"
+                        + " where st_intersects(p.geom,foo.geom) and not st_touches(p.geom, foo.geom)) as foo order by area desc", to4326_begin, to4326_end, getNumberOfdecimals());
+                params.add("srid=" + epsg + ";" + geom);
+            } else {
+                query = String.format(
+                          "with foo as (select st_geomfromewkt(?) as geom) "
+                        + "select * from (select year"
+                             + ", crop_code"
+                             + ", crop_name"
+                             + ", fieldid"
+                             + ", st_asgeojson(%s st_intersection(p.geom,foo.geom) %s , %d ) as geom "
+                             + ", st_area(st_intersection(p.geom,foo.geom)) as area "
+                             + ", st_perimeter(st_intersection(p.geom,foo.geom)) as perimeter "
+                        + "  from gewaspercelen p , foo "
+                        + " where st_intersects(p.geom, foo.geom) and not st_touches(p.geom, foo.geom)", to4326_begin, to4326_end, getNumberOfdecimals());
+                params.add("srid=28992;" + geom);
+            }
+        }
+
+        // Cropcode 
+        if (cropcode != null) {
+            query = query.concat(String.format(" and crop_code = '%s'", cropcode));
+        }
+
+        // Cropname
+        if (cropname != null) {
+            query = query.concat(" and lower(crop_name) like lower(?)");
+            params.add("%".concat(cropname.trim().concat("%")));
+        }
+
+        // Year
+        if (year != null) {
+            query = query.concat(String.format(" and year = %d", year));
+        }
+        
+        query = query.concat(" ) as foo order by area desc");
+        return doWorkWithTokenValidation(query, token, params);
+    }
+
+    @POST
+    @Path("/")
+    @ApiOperation(value = "Return the geometry and soil information of the intersections of the supplied geometry and the fields. If no epsg is provided epsg = 28992 (RD) is assumed. Currently only epsg's 28992 and 4326 (WGS 84) are supported")
+    @Produces(MediaType.APPLICATION_JSON + ";charset=utf-8")
+    public Response getFieldForParameterPost(
             @ApiParam(value = "Output geometry epsg. Default is 28992 only allowed value 4326", required = false) @QueryParam("output_epsg") Integer output_epsg,
             @ApiParam(value = "Define the number of resources returned min = 0 , max = 50 ", required = false) @QueryParam("page_size") Integer page_size,
             @ApiParam(value = "Depending on supplied value (nrhits or alldata) return either nrhits or all rows ", required = false) @QueryParam("result") String results,
@@ -206,15 +322,22 @@ public class FieldsServlet extends Worker {
             if (epsg != null) {
                 // Voorlopig alleen overlap selectie dus hele object voldoet.
                 query = String.format("with foo as (select st_transform(st_geomfromewkt(?),28992) as geom) \n"
-                        + "select year, crop_code, crop_name, fieldid  ,st_asgeojson(%s p.geom %s , %d ) as geom , st_area(p.geom) as area , st_perimeter(p.geom) as perimeter \n"
+                        + "select year"
+                            + " , crop_code"
+                            + " , crop_name"
+                            + " , fieldid"
+                            + " ,st_asgeojson(%s st_intersection(foo.gem,p.geom) %s , %d ) as geom "
+                            + " , st_area(st_intersection(foo.gem,p.geom)) as area "
+                            + " , st_perimeter(st_intersection(foo.gem,p.geom)) as perimeter \n"
                         + "  from gewaspercelen p , foo \n"
-                        + " where st_intersects(p.geom,foo.geom)", to4326_begin, to4326_end, getNumberOfdecimals());
+                        + " where st_intersects(p.geom,foo.geom) and not st_touches(foo.geom,p.geom)", to4326_begin, to4326_end, getNumberOfdecimals());
                 params.add("srid=" + epsg + ";" + geom);
             } else {
                 query = String.format("with foo as (select st_geomfromewkt(?) as geom) "
-                        + "select year, crop_code, crop_name, fieldid, st_asgeojson(%s p.geom %s , %d ) as geom , st_area(p.geom) as area , st_perimeter(p.geom) as perimeter "
+                        + "select year, crop_code, crop_name, fieldid, st_asgeojson(%s st_intersection(foo.gem,p.geom) %s , %d ) as geom , st_area(st_intersection(foo.gem,p.geom)) as area"
+                        + "     , st_perimeter(st_intersection(foo.gem,p.geom)) as perimeter "
                         + "  from gewaspercelen p , foo "
-                        + " where st_intersects(p.geom, foo.geom)", to4326_begin, to4326_end, getNumberOfdecimals());
+                        + " where st_intersects(p.geom, foo.geom) and not st_touches(foo.geom,p.geom) ", to4326_begin, to4326_end, getNumberOfdecimals());
                 params.add("srid=28992;" + geom);
             }
         }
@@ -235,10 +358,10 @@ public class FieldsServlet extends Worker {
             query = query.concat(String.format(" and year = %d", year));
         }
         
-        query = query.concat(" order by fieldid");
+        query = query.concat(" order by st_area(st_intersection(foo.gem,p.geom))  desc ");
         return doWorkWithTokenValidation(query, token, params);
     }
-
+    
     //
     // METEO 
     //
@@ -270,7 +393,12 @@ public class FieldsServlet extends Worker {
         if (page_size != null) {
             setPageSize(page_size);
         }
-        String query = String.format("select fieldid, meteostationid, rank, distance from gewaspercelen_meteostation where fieldid= %d", fieldid);
+        String query = String.format("select fieldid"
+                                       + " , meteostationid"
+                                       + " , rank"
+                                       + " , distance "
+                                     + "from gewaspercelen_meteostation "
+                                   + " where fieldid= %d order rank desc", fieldid);
         return doWorkWithTokenValidation(query, token);
     }
     
@@ -283,7 +411,7 @@ public class FieldsServlet extends Worker {
         reset();
         setResults(results);
         String query = String.format(
-                "select  sum(d.count) count, max(st_area(geom)) area,    sum(d.count*d.mean)/sum(d.count)  mean, min( d.min) min ,max(d.max) as max "
+                "select   max(st_area(geom)) area,    round((sum(d.count*d.mean)/sum(d.count))::numeric,3)  mean, min( d.min) min ,max(d.max) as max "
                 + "from (SELECT (ST_SummaryStats(ST_Clip(r.rast,p.geom))).*, p.geom "
                 + " FROM ahn r, gewaspercelen p"
                 + " WHERE p.fieldid = %d AND st_intersects(r.rast, p.geom)) as d", fieldid);

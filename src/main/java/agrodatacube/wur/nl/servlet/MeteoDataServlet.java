@@ -1,15 +1,11 @@
 /*
- * Copyright 2018 Wageningen Environmental Research
- *
- * For licensing information read the included LICENSE.txt file.
- *
- * Unless required by applicable law or agreed to in writing, this software
- * is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF
- * ANY KIND, either express or implied.
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
  */
 package agrodatacube.wur.nl.servlet;
 
-import agrodatacube.wur.nl.result.DateExpression;
+import agrodatacube.wur.nl.DateExpression;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -43,7 +39,7 @@ public class MeteoDataServlet extends Worker {
     public Response getMeteoDataForStation(@Context UriInfo uriInfo,
             @ApiParam(value = "Output geometry epsg. Default is 28992 only allowed value 4326", required = false) @QueryParam("output_epsg") Integer output_epsg,
             @ApiParam(value = "A token allows accesss to resources. ", required = true) @HeaderParam("token") String token,
-            @QueryParam("meteostation") String stationid,
+            @ApiParam(value = "The id of te meteostation for which you want meteodata", required = true) @QueryParam("meteostation") String stationid,
             @ApiParam(value = "Start date (included) from which you want meteo information for the field", required = false) @QueryParam("fromdate") Integer fromdate,
             @ApiParam(value = "End date (included) up until which you want meteo information for the field", required = false) @QueryParam("todate") Integer todate,
             @ApiParam(value = "Depending on supplied value (nrhits or alldata) return either nrhits or all rows ", required = false) @QueryParam("result") String results,
@@ -57,15 +53,18 @@ public class MeteoDataServlet extends Worker {
         if (page_size != null) {
             setPageSize(page_size);
         }
-        String query = "select * from knmi_meteo_values  ";
+        String where = " where ";
+        String query = "select k.*, (select st_asgeojson(geom) from knmi_meteo_station s where s.meteostationid=k.meteostationid) as geom from knmi_meteo_values k ";
         if (stationid != null) {
             query = query.concat(String.format("where meteostationid= %s ", stationid));
+            where = " and ";
         }
         if (fromdate != null) {
-            query = query.concat(" and ").concat(DateExpression.create("datum", DateExpression.DateTypeDate, ">=", fromdate));
+            query = query.concat(where).concat(DateExpression.create("datum", DateExpression.DateTypeDate, ">=", fromdate));
+            where = " and ";
         }
         if (todate != null) {
-            query = query.concat(" and ").concat(DateExpression.create("datum", DateExpression.DateTypeDate, "<=", todate));
+            query = query.concat(where).concat(DateExpression.create("datum", DateExpression.DateTypeDate, "<=", todate));
         }
         query = query.concat(" order by meteostationid, datum");
         return doWorkWithTokenValidation(query, token);

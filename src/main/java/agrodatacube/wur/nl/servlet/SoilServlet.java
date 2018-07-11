@@ -1,13 +1,7 @@
 /*
- * Copyright 2018 Wageningen Environmental Research
- *
- * For licensing information read the included LICENSE.txt file.
- *
- * Unless required by applicable law or agreed to in writing, this software
- * is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF
- * ANY KIND, either express or implied.
- *
- * STILL UNDER DEVELOPMENT
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
  */
 package agrodatacube.wur.nl.servlet;
 
@@ -73,16 +67,28 @@ public class SoilServlet extends Worker {
             }
         }
         ArrayList<Object> params = new ArrayList<>();
-        String query = String.format("select  id as entityid, soilcode, soilname, soiltype, st_asgeojson(%s geom %s , %d) as geom,  st_area(geom) as area , st_perimeter(geom) as perimeter from bod50000 order by id ", to4326_begin, to4326_end, getNumberOfdecimals());
+        String query = String.format(
+                "select id as entityid"
+                  + " , soilcode"
+                  + " , soilname"
+                  + " , soiltype"
+                  + " , st_asgeojson(%s geom %s , %d) as geom"
+                  + " , st_area(geom) as area "
+                  + " , st_perimeter(geom) as perimeter "
+                + "from bod50000 order by id ", to4326_begin, to4326_end, getNumberOfdecimals());
         if (geom != null) {
-            if (epsg != null) {
-                query = String.format("select id as entityid, soilcode, soilname, soiltype, st_asgeojson(%s geom %s , %d) as geom from bod50000 where st_intersects(st_transform(st_geomfromewkt(?),28992),geom) order by id", to4326_begin, to4326_end, getNumberOfdecimals());
-                params.add("srid=" + epsg + ";" + geom);
-            } else {
-                query = String.format("select id as entityid, soilcode, soilname, soiltype, st_asgeojson(%s geom %s , %d ) as geom from bod50000 where st_intersects(st_geomfromewkt(?),geom) order by id", to4326_begin, to4326_end, getNumberOfdecimals());
-                params.add("srid=28992;" + geom);
-
-            }
+            String theGeom = transformTo28992EWKT(epsg, geom);
+                query = String.format(
+                       "with foo as (select st_geomfromewkt(?) as geom) "
+                     + "select * from (select id as entityid"
+                           + ", soilcode"
+                           + ", soilname"
+                           + ", soiltype"
+                           + ", st_asgeojson(%s st_intersection(foo.geom, bod50000.geom) %s , %d ) as geom "
+                           + ", st_area(st_intersection(foo.geom, bod50000.geom)) as area"
+                           + ", st_perimeter(st_intersection(foo.geom, bod50000.geom)) as perimeter "
+                        + "from bod50000 , foo where st_intersects(foo.geom,bod50000.geom)) as not_foo order by area desc", to4326_begin, to4326_end, getNumberOfdecimals());
+                params.add(theGeom);            
         }
         return doWorkWithTokenValidation(query, token, params);
     }
