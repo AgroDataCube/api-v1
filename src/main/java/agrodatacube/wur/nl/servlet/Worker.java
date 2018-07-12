@@ -1,7 +1,12 @@
 /*
+* Copyright 2018 Wageningen Environmental Research
+*
+* For licensing information read the included LICENSE.txt file.
+*
+* Unless required by applicable law or agreed to in writing, this software
+* is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF
+* ANY KIND, either express or implied.
  */
-// https://docs.jboss.org/resteasy/docs/1.0.2.GA/userguide/html/JAX-RS_Resource_Locators_and_Sub_Resources.html
-// https://examples.javacodegeeks.com/enterprise-java/rest/jersey/jax-rs-queryparam-example/ -> Context en niet gedefinieerde parameters
 package agrodatacube.wur.nl.servlet;
 
 import agrodatacube.wur.nl.exec.Executor;

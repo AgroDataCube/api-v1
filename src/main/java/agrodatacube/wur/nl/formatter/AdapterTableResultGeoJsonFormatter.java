@@ -1,11 +1,11 @@
 /*
- * Copyright 2018 Wageningen Environmental Research
- *
- * For licensing information read the included LICENSE.txt file.
- *
- * Unless required by applicable law or agreed to in writing, this software
- * is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF
- * ANY KIND, either express or implied.
+* Copyright 2018 Wageningen Environmental Research
+*
+* For licensing information read the included LICENSE.txt file.
+*
+* Unless required by applicable law or agreed to in writing, this software
+* is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF
+* ANY KIND, either express or implied.
  */
 package agrodatacube.wur.nl.formatter;
 
@@ -21,16 +21,12 @@ import java.util.ArrayList;
  */
 public class AdapterTableResultGeoJsonFormatter extends AdapterTableResultJsonFormatter {
 
-    private String getHeader() {
+    protected String getHeader() {
         return "{ \"type\" : \"FeatureCollection\" , \"features\" : [ ";
     }
 
-    private String getEnd() {
+    protected String getEnd() {
         return "]}";
-    }
-
-    private String createFeature() {
-        return "";
     }
 
     /**
@@ -109,14 +105,12 @@ public class AdapterTableResultGeoJsonFormatter extends AdapterTableResultJsonFo
                         first = false;
                         // TODO: Numeriek geen quotes
 
-                        if (row.get(i) instanceof Double) {
-                            geojsonResult += "\"" + table.getColumnName(i) + "\" : " + row.get(i);
-                        } else if (row.get(i) instanceof Integer) {
-                            geojsonResult += "\"" + table.getColumnName(i) + "\" : " + row.get(i);
+                        if (row.get(i) instanceof java.lang.String) {
+                            geojsonResult += "\"" + table.getColumnName(i) + "\" : " + (row.get(i) == null ? "null" : "\"" + row.get(i) + "\""); 
                         } else if (row.get(i) instanceof java.sql.Date) {
                             geojsonResult += "\"" + table.getColumnName(i) + "\" : " + (row.get(i) == null ? "null" : "\"" + formatDate(row.get(i)) + "\""); // TODO: Formatter ivm datum
-                        } else {
-                            geojsonResult += "\"" + table.getColumnName(i) + "\" : " + (row.get(i) == null ? "null" : "\"" + row.get(i) + "\""); // TODO: Formatter ivm datum
+                        } else  {
+                            geojsonResult += "\"" + table.getColumnName(i) + "\" : " + row.get(i);
                         }
                     }
                 }

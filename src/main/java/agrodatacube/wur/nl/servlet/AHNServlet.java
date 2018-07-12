@@ -1,7 +1,11 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+* Copyright 2018 Wageningen Environmental Research
+*
+* For licensing information read the included LICENSE.txt file.
+*
+* Unless required by applicable law or agreed to in writing, this software
+* is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF
+* ANY KIND, either express or implied.
  */
 package agrodatacube.wur.nl.servlet;
 
@@ -44,7 +48,7 @@ public class AHNServlet extends Worker {
     public Response getAHNForGeometry(
             @ApiParam(value = "A valid WKT geometry (point or polygon). Default in epsg 28992 when not please supply epsg", required =true) @QueryParam("geometry") String geom,
             @ApiParam(value="The epsg for the supplied geomery. Default 28992 (RD). Currently 4326 (WGS84) and 28992 (RD) are supported" , required = false) @QueryParam("epsg") Integer epsg,
-            @ApiParam(value = "A token allows accesss to resources. !", required = false) @HeaderParam("token") String token) {               
+            @ApiParam(value = "A token allows accesss to resources. !", required = true) @HeaderParam("token") String token) {               
         ArrayList<Object> params = new ArrayList<>();
         String query = "";
         reset();

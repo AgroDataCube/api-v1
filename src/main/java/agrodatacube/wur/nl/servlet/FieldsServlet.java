@@ -1,6 +1,15 @@
+/*
+* Copyright 2018 Wageningen Environmental Research
+*
+* For licensing information read the included LICENSE.txt file.
+*
+* Unless required by applicable law or agreed to in writing, this software
+* is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF
+* ANY KIND, either express or implied.
+ */
 package agrodatacube.wur.nl.servlet;
 
-import agrodatacube.wur.nl.DateExpression;
+import agrodatacube.wur.nl.result.DateExpression;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -221,7 +230,7 @@ public class FieldsServlet extends Worker {
                 setOutputEpsg(4326);
             }
         }
-        String query = String.format("select year"
+        String query = String.format("select * from ( select year"
                                        + " , crop_code"
                                        + " , crop_name"
                                        + " , fieldid"
@@ -231,34 +240,19 @@ public class FieldsServlet extends Worker {
                                     + " from gewaspercelen p "
                                    + " where fieldid > 0 ", to4326_begin, to4326_end, getNumberOfdecimals()); // force where clause usage so next can be AND
         if (geom != null) {
-            if (epsg != null) {
-                // Voorlopig alleen overlap selectie dus hele object voldoet.
+            String theGeom = transformTo28992EWKT(epsg, geom);
                 query = String.format(
-                          "with foo as (select st_transform(st_geomfromewkt(?),28992) as geom) \n"
+                          "with foo1 as (select st_geomfromewkt(?) as geom) "
                         + "select * from (select year"
                              + ", crop_code"
                              + ", crop_name"
                              + ", fieldid"
-                             + ", st_asgeojson(%s st_intersection(p.geom,foo.geom) %s , %d ) as geom "
-                             + ", st_area(st_intersection(p.geom,foo.geom)) as area "
-                             + ", st_perimeter(st_intersection(p.geom,foo.geom)) as perimeter \n"
-                        + "  from gewaspercelen p , foo \n"
-                        + " where st_intersects(p.geom,foo.geom) and not st_touches(p.geom, foo.geom)) as foo order by area desc", to4326_begin, to4326_end, getNumberOfdecimals());
-                params.add("srid=" + epsg + ";" + geom);
-            } else {
-                query = String.format(
-                          "with foo as (select st_geomfromewkt(?) as geom) "
-                        + "select * from (select year"
-                             + ", crop_code"
-                             + ", crop_name"
-                             + ", fieldid"
-                             + ", st_asgeojson(%s st_intersection(p.geom,foo.geom) %s , %d ) as geom "
-                             + ", st_area(st_intersection(p.geom,foo.geom)) as area "
-                             + ", st_perimeter(st_intersection(p.geom,foo.geom)) as perimeter "
-                        + "  from gewaspercelen p , foo "
-                        + " where st_intersects(p.geom, foo.geom) and not st_touches(p.geom, foo.geom)", to4326_begin, to4326_end, getNumberOfdecimals());
-                params.add("srid=28992;" + geom);
-            }
+                             + ", st_asgeojson(%s st_intersection(p.geom,foo1.geom) %s , %d ) as geom "
+                             + ", st_area(st_intersection(p.geom,foo1.geom)) as area "
+                             + ", st_perimeter(st_intersection(p.geom,foo1.geom)) as perimeter "
+                        + "  from gewaspercelen p , foo1 "
+                        + " where st_intersects(p.geom, foo1.geom) and not st_touches(p.geom, foo1.geom)", to4326_begin, to4326_end, getNumberOfdecimals());
+                params.add(theGeom);
         }
 
         // Cropcode 
@@ -277,7 +271,7 @@ public class FieldsServlet extends Worker {
             query = query.concat(String.format(" and year = %d", year));
         }
         
-        query = query.concat(" ) as foo order by area desc");
+        query = query.concat(" ) as foo2 order by area desc");
         return doWorkWithTokenValidation(query, token, params);
     }
 
@@ -318,28 +312,21 @@ public class FieldsServlet extends Worker {
             }
         }
         String query = String.format("select year, crop_code, crop_name, fieldid , st_asgeojson(%s p.geom %s , %d ) as geom , st_area(p.geom) as area , st_perimeter(p.geom) as perimeter from gewaspercelen p where fieldid > 0 ", to4326_begin, to4326_end, getNumberOfdecimals()); // force where clause usage so next can be AND
+        
         if (geom != null) {
-            if (epsg != null) {
-                // Voorlopig alleen overlap selectie dus hele object voldoet.
-                query = String.format("with foo as (select st_transform(st_geomfromewkt(?),28992) as geom) \n"
-                        + "select year"
-                            + " , crop_code"
-                            + " , crop_name"
-                            + " , fieldid"
-                            + " ,st_asgeojson(%s st_intersection(foo.gem,p.geom) %s , %d ) as geom "
-                            + " , st_area(st_intersection(foo.gem,p.geom)) as area "
-                            + " , st_perimeter(st_intersection(foo.gem,p.geom)) as perimeter \n"
-                        + "  from gewaspercelen p , foo \n"
-                        + " where st_intersects(p.geom,foo.geom) and not st_touches(foo.geom,p.geom)", to4326_begin, to4326_end, getNumberOfdecimals());
-                params.add("srid=" + epsg + ";" + geom);
-            } else {
+            String theGeom = transformTo28992EWKT(epsg, geom);
                 query = String.format("with foo as (select st_geomfromewkt(?) as geom) "
-                        + "select year, crop_code, crop_name, fieldid, st_asgeojson(%s st_intersection(foo.gem,p.geom) %s , %d ) as geom , st_area(st_intersection(foo.gem,p.geom)) as area"
-                        + "     , st_perimeter(st_intersection(foo.gem,p.geom)) as perimeter "
+                        + "select year"
+                        + "     , crop_code"
+                        + "     , crop_name"
+                        + "     , fieldid"
+                        + "     , st_asgeojson(%s st_intersection(foo.geom,p.geom) %s , %d ) as geom "
+                        + "     , st_area(st_intersection(foo.geom,p.geom)) as area"
+                        + "     , st_perimeter(st_intersection(foo.geom,p.geom)) as perimeter "
                         + "  from gewaspercelen p , foo "
-                        + " where st_intersects(p.geom, foo.geom) and not st_touches(foo.geom,p.geom) ", to4326_begin, to4326_end, getNumberOfdecimals());
-                params.add("srid=28992;" + geom);
-            }
+                        + " where st_intersects(p.geom, foo.geom) "
+                        + "   and not st_touches(foo.geom,p.geom) ", to4326_begin, to4326_end, getNumberOfdecimals());
+                params.add(theGeom);            
         }
 
         // Cropcode 
@@ -358,7 +345,7 @@ public class FieldsServlet extends Worker {
             query = query.concat(String.format(" and year = %d", year));
         }
         
-        query = query.concat(" order by st_area(st_intersection(foo.gem,p.geom))  desc ");
+        query = query.concat(" order by st_area(st_intersection(foo.geom,p.geom)  desc ");
         return doWorkWithTokenValidation(query, token, params);
     }
     

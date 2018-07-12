@@ -1,5 +1,10 @@
-/**
- * This package contains all classes that execute the web requests. All methods depend on the worker class and the executor class to do the work.
+/*
+* Copyright 2018 Wageningen Environmental Research
+*
+* For licensing information read the included LICENSE.txt file.
+*
+* Unless required by applicable law or agreed to in writing, this software
+* is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF
+* ANY KIND, either express or implied.
  */
-
 package agrodatacube.wur.nl.servlet;

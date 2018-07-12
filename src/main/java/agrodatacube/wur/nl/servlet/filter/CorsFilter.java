@@ -1,13 +1,11 @@
 /*
- * Copyright 2018 Wageningen Environmental Research
- *
- * For licensing information read the included LICENSE.txt file.
- *
- * Unless required by applicable law or agreed to in writing, this software
- * is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF
- * ANY KIND, either express or implied.
- *
- * STILL UNDER DEVELOPMENT
+* Copyright 2018 Wageningen Environmental Research
+*
+* For licensing information read the included LICENSE.txt file.
+*
+* Unless required by applicable law or agreed to in writing, this software
+* is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF
+* ANY KIND, either express or implied.
  */
 package agrodatacube.wur.nl.servlet.filter;
 
@@ -30,7 +28,9 @@ public class CorsFilter implements ContainerResponseFilter {
             "origin, content-type, accept, authorization, token");
 //        response.getHttpHeaders().add("Access-Control-Allow-Credentials","true");
         response.getHttpHeaders().add("Access-Control-Allow-Methods",
-            "GET, POST, PUT, DELETE, OPTIONS, HEAD");
+            "GET, POST, OPTIONS");
+//        response.getHttpHeaders().add("Access-Control-Allow-Methods",
+//            "GET, POST, PUT, DELETE, OPTIONS, HEAD");
 
         return response;
     }

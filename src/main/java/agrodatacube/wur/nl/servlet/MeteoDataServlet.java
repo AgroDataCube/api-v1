@@ -1,11 +1,15 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+* Copyright 2018 Wageningen Environmental Research
+*
+* For licensing information read the included LICENSE.txt file.
+*
+* Unless required by applicable law or agreed to in writing, this software
+* is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF
+* ANY KIND, either express or implied.
  */
 package agrodatacube.wur.nl.servlet;
 
-import agrodatacube.wur.nl.DateExpression;
+import agrodatacube.wur.nl.result.DateExpression;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -54,7 +58,10 @@ public class MeteoDataServlet extends Worker {
             setPageSize(page_size);
         }
         String where = " where ";
-        String query = "select k.*, (select st_asgeojson(geom) from knmi_meteo_station s where s.meteostationid=k.meteostationid) as geom from knmi_meteo_values k ";
+        String query = "select k.*, (select st_asgeojson(geom) "
+                                   + " from knmi_meteo_station s "
+                                   + "where s.meteostationid=k.meteostationid) as geom "
+                       + "from knmi_meteo_values k ";
         if (stationid != null) {
             query = query.concat(String.format("where meteostationid= %s ", stationid));
             where = " and ";
