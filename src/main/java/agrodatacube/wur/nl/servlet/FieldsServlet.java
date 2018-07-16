@@ -385,7 +385,7 @@ public class FieldsServlet extends Worker {
                                        + " , rank"
                                        + " , distance "
                                      + "from gewaspercelen_meteostation "
-                                   + " where fieldid= %d order rank desc", fieldid);
+                                   + " where fieldid= %d order by rank desc", fieldid);
         return doWorkWithTokenValidation(query, token);
     }
     

@@ -9,6 +9,8 @@
  */
 package agrodatacube.wur.nl.servlet;
 
+import agrodatacube.wur.nl.formatter.AdapterTableResultFormatter;
+import agrodatacube.wur.nl.formatter.AdapterTableResultGeoJsonSeriesFormatter;
 import agrodatacube.wur.nl.result.DateExpression;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -74,7 +76,7 @@ public class MeteoDataServlet extends Worker {
             query = query.concat(where).concat(DateExpression.create("datum", DateExpression.DateTypeDate, "<=", todate));
         }
         query = query.concat(" order by meteostationid, datum");
-        return doWorkWithTokenValidation(query, token);
+        return doWorkWithTokenValidation(query, token, new AdapterTableResultGeoJsonSeriesFormatter());
     }
 
     @GET
@@ -96,6 +98,6 @@ public class MeteoDataServlet extends Worker {
             setPageSize(page_size);
         }
         String query = String.format("select * from knmi_meteo_values where meteostationid= %s and %s order by datum", fieldid, DateExpression.create("datum", DateExpression.DateTypeDate, "=", aDate));
-        return doWorkWithTokenValidation(query, token);
+        return doWorkWithTokenValidation(query, token,new AdapterTableResultGeoJsonSeriesFormatter());
     }
 }

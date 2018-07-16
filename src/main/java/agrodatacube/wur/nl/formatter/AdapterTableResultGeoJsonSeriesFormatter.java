@@ -21,6 +21,11 @@ import java.util.ArrayList;
  */
 public class AdapterTableResultGeoJsonSeriesFormatter extends AdapterTableResultGeoJsonFormatter {
 
+    public AdapterTableResultGeoJsonSeriesFormatter() {
+        super();
+    }
+
+    
     /**
      * Format an adapterresult as geojson.
      *

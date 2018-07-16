@@ -70,6 +70,12 @@ public class Worker {
             Class<AdapterTableResultFormatter> c) throws IllegalAccessException, InstantiationException {
         return doWorkWithTokenValidation(query, token, new ArrayList<>(), c.newInstance());
     }
+    
+    protected Response doWorkWithTokenValidation(String query,
+            String token,
+            AdapterTableResultFormatter c) {
+        return doWorkWithTokenValidation(query, token, new ArrayList<>(), c);
+    }
 
     protected Response doWorkWithTokenValidation(String query,
             String token,
@@ -156,7 +162,7 @@ public class Worker {
             ArrayList<Object> params,
             AdapterTableResultFormatter f) {
         try {
-            ExecutorResult result = Executor.execute(query, params, paging);
+            ExecutorResult result = Executor.execute(query, params, paging, f);
             if (accessToken != null) {
                 Registration.updateUsageInformation(accessToken, result.getArea(), getRemoteIP());
             }
@@ -324,8 +330,12 @@ public class Worker {
             return "SRID=28992;"+geom;
         }
         
+        //
+        // Convert the geometry to (RD) 28992 and return the ewkt.
+        //
+        
         try {
-            return new String(Executor.executeForImage("SRID="+epsg+";"+geom));            
+            return new String(Executor.executeForImage("select st_asewkt(st_transform(st_geomfromewkt('SRID="+epsg+";"+geom+"'),28992))"));       
         }
         catch (Exception e) {
             throw new RuntimeException(e);
