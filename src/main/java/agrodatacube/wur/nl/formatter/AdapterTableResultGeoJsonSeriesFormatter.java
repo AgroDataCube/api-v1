@@ -134,4 +134,9 @@ public class AdapterTableResultGeoJsonSeriesFormatter extends AdapterTableResult
         w.flush();
     }
 
+    @Override
+     protected String getEnd() {
+        return "]}]}";
+    }
+    
 }

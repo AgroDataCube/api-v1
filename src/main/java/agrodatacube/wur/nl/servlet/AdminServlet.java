@@ -10,8 +10,6 @@
 package agrodatacube.wur.nl.servlet;
 
 import agrodatacube.wur.nl.formatter.AdapterTableResultGeoJsonFormatter;
-import agrodatacube.wur.nl.token.AccessToken;
-import agrodatacube.wur.nl.token.AccessTokenFactory;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;

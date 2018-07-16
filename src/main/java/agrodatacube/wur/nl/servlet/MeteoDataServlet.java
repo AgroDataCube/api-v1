@@ -10,6 +10,7 @@
 package agrodatacube.wur.nl.servlet;
 
 import agrodatacube.wur.nl.formatter.AdapterTableResultFormatter;
+import agrodatacube.wur.nl.formatter.AdapterTableResultGeoJsonFormatter;
 import agrodatacube.wur.nl.formatter.AdapterTableResultGeoJsonSeriesFormatter;
 import agrodatacube.wur.nl.result.DateExpression;
 import io.swagger.annotations.Api;
@@ -50,7 +51,8 @@ public class MeteoDataServlet extends Worker {
             @ApiParam(value = "End date (included) up until which you want meteo information for the field", required = false) @QueryParam("todate") Integer todate,
             @ApiParam(value = "Depending on supplied value (nrhits or alldata) return either nrhits or all rows ", required = false) @QueryParam("result") String results,
             @ApiParam(value = "Define the number of resources returned min = 0 , max = 50 ", required = false) @QueryParam("page_size") Integer page_size,
-            @ApiParam(value = "Define the rank of the first resource to be returned. NOTE first is 0 NOT 1 ", required = false) @QueryParam("page_offset") Integer page_offset) {
+            @ApiParam(value = "Define the rank of the first resource to be returned. NOTE first is 0 NOT 1 ", required = false) @QueryParam("page_offset") Integer page_offset,
+            @ApiParam(value = "If this is set to series the results are returned as an array for on feature instead of separate features", required = false) @QueryParam("output_format") String output_format) {
         reset();
         setResults(results);
         if (page_offset != null) {
@@ -76,7 +78,13 @@ public class MeteoDataServlet extends Worker {
             query = query.concat(where).concat(DateExpression.create("datum", DateExpression.DateTypeDate, "<=", todate));
         }
         query = query.concat(" order by meteostationid, datum");
-        return doWorkWithTokenValidation(query, token, new AdapterTableResultGeoJsonSeriesFormatter());
+        AdapterTableResultFormatter f = new AdapterTableResultGeoJsonFormatter();
+        if (output_format != null) {
+            if (output_format.equalsIgnoreCase("series")) {
+                f= new AdapterTableResultGeoJsonSeriesFormatter();
+            }
+        }
+        return doWorkWithTokenValidation(query, token, f);
     }
 
     @GET
@@ -98,6 +106,6 @@ public class MeteoDataServlet extends Worker {
             setPageSize(page_size);
         }
         String query = String.format("select * from knmi_meteo_values where meteostationid= %s and %s order by datum", fieldid, DateExpression.create("datum", DateExpression.DateTypeDate, "=", aDate));
-        return doWorkWithTokenValidation(query, token,new AdapterTableResultGeoJsonSeriesFormatter());
+        return doWorkWithTokenValidation(query, token,new AdapterTableResultGeoJsonFormatter());
     }
 }

@@ -61,7 +61,7 @@ public class AHNServlet extends Worker {
             //
             if (epsg != null) {
                 query = "With foo as (select st_transform(st_geomfromewkt(?),28992) as geom) "
-                        + "select  max(st_area(geom)) area, round((sum(d.count*d.mean)/sum(d.count))::numeric,3)  mean  ,   min( d.min),max(  d.max)"
+                        + "select max(st_area(geom)) area, round((sum(d.count*d.mean)/sum(d.count))::numeric,3)  mean  ,   min( d.min),max(  d.max)"
                         + " from ("
                         + "SELECT (ST_SummaryStats(ST_Clip(r.rast,foo.geom))).*, foo.geom geom"
                         + " FROM ahn2_5m r, foo"
