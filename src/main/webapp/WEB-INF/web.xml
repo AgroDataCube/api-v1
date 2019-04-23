@@ -4,7 +4,7 @@
    
     <servlet-mapping>
         <servlet-name>jersey-servlet</servlet-name>
-        <url-pattern>/v1/rest/*</url-pattern>
+        <url-pattern>/v2/rest/*</url-pattern>
     </servlet-mapping>
 
     <servlet>
@@ -13,17 +13,17 @@
         <init-param>
             <param-name>com.sun.jersey.config.property.packages</param-name>
             <param-value>
-                agrodatacube.wur.nl.servlet,io.swagger.jaxrs.json,io.swagger.jaxrs.listing                                
+                nl.wur.agrodatacube.servlet,io.swagger.jaxrs.json,io.swagger.jaxrs.listing                                
             </param-value>
         </init-param>
         <init-param>
         <param-name>com.sun.jersey.spi.container.ContainerResponseFilters</param-name>
-        <param-value>agrodatacube.wur.nl.servlet.filter.CorsFilter</param-value>
+        <param-value>nl.wur.agrodatacube.servlet.filter.CorsFilter</param-value>
     </init-param>
         <load-on-startup>1</load-on-startup>
     </servlet>
     
-    <servlet>
+<!--    <servlet>
         <servlet-name>registrationservlet</servlet-name>
         <servlet-class>agrodatacube.wur.nl.registration.RegistrationServlet</servlet-class>
     </servlet>
@@ -31,7 +31,7 @@
     <servlet-mapping>
         <servlet-name>registrationservlet</servlet-name>
         <url-pattern>/api/registrationservlet</url-pattern>
-    </servlet-mapping>
+    </servlet-mapping>-->
 
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>
@@ -43,11 +43,11 @@
         <servlet-class>io.swagger.jaxrs.config.DefaultJaxrsConfig</servlet-class>
         <init-param>
             <param-name>api.version</param-name>
-            <param-value>1.0.0</param-value>
+            <param-value>2.0.0</param-value>
         </init-param>
         <init-param>
             <param-name>swagger.api.basepath</param-name>
-            <param-value>https://agrodatacube.wur.nl/api/v1/rest/</param-value>
+            <param-value>https://agrodatacube.wur.nl/api/v2/rest/</param-value>
             <!--<param-value>http://localhost:8084/api/v1/rest/</param-value>-->
         </init-param>
         <init-param>

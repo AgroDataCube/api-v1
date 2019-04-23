@@ -4,7 +4,7 @@
     Author     : Rande001
 --%>
 
-<%@page import="agrodatacube.wur.nl.token.Registration"%>
+<%@page import="nl.wur.agrodatacube.token.Registration"%>
 <%
     String reg_response = null;
     String email = request.getParameter("email");
