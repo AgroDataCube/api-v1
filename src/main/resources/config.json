@@ -508,7 +508,7 @@
             "type": "wcs",
             "name": "Alterra Geodesk",
             "url": "http://scomp1250:6080/arcgis/services/SPOT/Spot_NDVI/ImageServer/WCSServer?Service=WCS&Version=1.0.0&Request=GetCoverage&RESX=10&RESY=10",
-            "version": "1.0.0"
+            "version": "1.0.0",
 			"_comment":"Only accessible from within WUR"
         }
     ]
