@@ -1,10 +1,10 @@
-# API-V1
+# API-V2
 Application Programming Interface for the AgroDataCube
 
-Version 1 of the AgroDataCube provides crop field oriented data for the Netherlands through a REST API that returns information in GeoJSON format.
+Version 2 of the AgroDataCube provides crop field oriented data for the Netherlands through a REST API that returns information in GeoJSON format.
 
 This version was created using the following tools
-- netbeans 8.0.2 (any ide supporting maven will do)
+- netbeans 9 (any ide supporting maven will do)
 - maven version as supplied with netbeans
 - java 8
 - postgres 9.2 db
@@ -14,7 +14,7 @@ In order to use the project in your own environment:
 - optionally change the path in web.xml
 - build in e.g. netbeans (v8 was used)
 - deploy (in tomcat)
-- add filled-in agrodatacube.properties file from provided template in _root of tomcat_
+- add filled-in agrodatacube_v2.properties file from provided template in _root of tomcat_
 - get a database, see #38 Sample database (aka Duckburg) is available (adctest.dmp.txt). **Ask us!**
 
 Steps to use db (_verified with postgres 9.4_):
